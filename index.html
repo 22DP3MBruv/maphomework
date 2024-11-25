@@ -18,7 +18,12 @@
     <script src="functions.js"></script>
     <script>
         // Initialize the map
-        var map = L.map('map').setView([56.8796, 24.6032], 7); // Centered on Latvia
+        var map = L.map('map', {
+            worldCopyJump: true,
+            maxBounds: [
+                [-90, -180],
+                [90, 180]
+            ], minZoom: 2}).setView([56.8796, 24.6032], 7); // Centered on Latvia
 
         // Add tile layer without any labels
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}{r}.png', {
