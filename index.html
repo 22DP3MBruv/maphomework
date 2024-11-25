@@ -51,13 +51,12 @@
         // Use the JSON data and add it to the map
         loadJSON(function(data) {
             L.geoJSON(data, {
-                onEachFeature: function (feature, layer) {
+                onEachFeature: function (feature) {
                     if (feature.properties) {
                         var popupContent = "<b>Place Name:</b> " + feature.properties.PLACENAME + "<br>" +
                                            "<b>Place Subtype:</b> " + feature.properties.PLACESUBTY + "<br>" +
                                            "<b>Region Code:</b> " + feature.properties.REG_CODE + "<br>" +
                                            "<b>District:</b> " + feature.properties.LVM_DISTRI;
-                        layer.bindPopup(popupContent);
                         
                         // Convert LKS-92 coordinates to WGS-84 and add marker
                         var latLon = LKS92WGS84.convertXYToLatLon(feature.geometry.coordinates);
