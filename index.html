@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karte</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="functions.js"></script>
+    <script>
+        // Initialize the map
+        var map = L.map('map').setView([56.8796, 24.6032], 7); // Centered on Latvia
+
+        // Add tile layer without any labels
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.carto.com/attributions">CARTO</a>',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Function to load JSON data
+        function loadJSON(callback) {
+            var xobj = new XMLHttpRequest();
+            xobj.overrideMimeType("application/json");
+            xobj.open('GET', 'geomap.json', true);
+            xobj.onreadystatechange = function () {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    callback(JSON.parse(xobj.responseText));
+                }
+            };
+            xobj.send(null);
+        }
+
+        function adjustPopupSize() {
+            var zoomLevel = map.getZoom();
+            var fontSize = Math.max(1, 1 + (10 - zoomLevel) * 0.1); // Ensure font size does not become too small
+            var popups = document.getElementsByClassName('leaflet-popup-content');
+            for (var i = 0; i < popups.length; i++) {
+                popups[i].style.fontSize = fontSize + 'em';
+            }
+        }
+
+        // Use the JSON data and add it to the map
+        loadJSON(function(data) {
+            L.geoJSON(data, {
+                onEachFeature: function (feature, layer) {
+                    if (feature.properties) {
+                        var popupContent = "<b>Place Name:</b> " + feature.properties.PLACENAME + "<br>" +
+                                           "<b>Place Subtype:</b> " + feature.properties.PLACESUBTY + "<br>" +
+                                           "<b>Region Code:</b> " + feature.properties.REG_CODE + "<br>" +
+                                           "<b>District:</b> " + feature.properties.LVM_DISTRI;
+                        layer.bindPopup(popupContent);
+                        
+                        // Convert LKS-92 coordinates to WGS-84 and add marker
+                        var latLon = LKS92WGS84.convertXYToLatLon(feature.geometry.coordinates);
+                        L.marker([latLon[0], latLon[1]]).addTo(map).bindPopup(popupContent);
+                    }
+                }
+            }).addTo(map);
+
+            adjustPopupSize();
+            map.on('zoomend', adjustPopupSize);
+        });
+    </script>
+</body>
+</html>
